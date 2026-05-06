@@ -1,0 +1,16 @@
+version: "3.9"
+
+services:
+  claude-agent:
+    build: .
+    container_name: claude-sdk-agent
+    env_file:
+      - .env
+    environment:
+      - ANTHROPIC_API_KEY
+    volumes:
+      - ./:/app
+    ports:
+      - "8000:8000"
+    command: python -m uvicorn api.app:app --host 0.0.0.0 --port 8000
+    restart: unless-stopped
