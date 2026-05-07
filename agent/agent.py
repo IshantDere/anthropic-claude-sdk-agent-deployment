@@ -1,25 +1,23 @@
 import asyncio
-from claude_agent_sdk import query, ClaudeAgentOptions, AssistantMessage, ResultMessage
+import os
+from claude_agent_sdk import query, ClaudeAgentOptions
 
 
 async def main():
-    # Agentic loop: streams messages as Claude works
+    # Get the project root directory
+    project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    
+    options = ClaudeAgentOptions(
+        cwd=project_root,  # Project root with .claude/skills/
+        setting_sources=["user", "project"],  # Load Skills from filesystem
+        allowed_tools=["Skill", "Read", "Write", "Bash"],  # Enable Skill tool
+    )
+
     async for message in query(
         prompt="Review utils.py for bugs that would cause crashes. Fix any issues you find.",
-        options=ClaudeAgentOptions(
-            allowed_tools=["Read", "Edit", "Glob"],  # Tools Claude can use
-            permission_mode="acceptEdits",  # Auto-approve file edits
-        ),
+        options=options,
     ):
-        # Print human-readable output
-        if isinstance(message, AssistantMessage):
-            for block in message.content:
-                if hasattr(block, "text"):
-                    print(block.text)  # Claude's reasoning
-                elif hasattr(block, "name"):
-                    print(f"Tool: {block.name}")  # Tool being called
-        elif isinstance(message, ResultMessage):
-            print(f"Done: {message.subtype}")  # Final result
+        print(message)
 
 
 asyncio.run(main())
